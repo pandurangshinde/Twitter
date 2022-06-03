@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tweets</title>
+</head>
+<body>
+    <div style="margin-bottom: .5rem; padding-top: 1rem;">
+        <p id="header_greetings">Hello, <%=  tweetsAndUserObj.currentLoggedInUser[0].DisplayName %></p>
+       <div id ="imglogo">
+           <img src=<%= 'data:image/png;base64,' + tweetsAndUserObj.currentLoggedInUser[0].Base64  %> alt="">
+       </div>
+        <button id="logout">Logout</button>
+        
+    </div>
+    
+    <!-- Post new tweet -->
+    <div>
+        <form id="newTweet" style="margin-bottom: 2rem;">
+            <textarea type="textarea" rows="6" cols="50"  id="textContent" placeholder="Type something..."></textarea> <br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <!-- Display all tweerts -->
+    <div>
+        <% tweetsAndUserObj.resultData.forEach(function(tweet) { %>
+            <div style="margin-bottom: 2rem;">
+                <strong><%= tweet.author.UserName %></strong> <br>
+                <p id = <%= "content" + tweet._id %> value= <%= tweet._id %>  > <%= tweet.textContent %> <br></p>
+                Likes: <%= tweet.likes %> <br>
+                <button onclick="likeEvent(event)"  id="likeBtn" value = <%= tweet._id %> >Like</button>
+                <button onclick="editEvent(event)"  id="editBtn" value = <%= tweet._id %> >Edit</button>
+                <button onclick="deleteEvent(event)"  id="deleteBtn" value = <%= tweet._id %> >Delete</button>
+                <button onclick="saveEvent(event)" style="display: none;"  id = <%= "saveBtn" + tweet._id %> value = <%= tweet._id %> >Save</button>
+            </div>
+            <hr>
+        <% }); %>
+    </div>
+     
+      <script>
+          if(!localStorage.getItem('currentUsername')){
+              window.location.href = '/login';
+          }
+
+        // Create tweet event
+        const formElement = document.querySelector('#newTweet');
+        formElement.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userEnteredTextContent = document.querySelector('#textContent').value;
+
+            const result =  await fetch('/Tweets', {
+                method: 'POST',
+                headers:{
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    textContent: userEnteredTextContent,
+                })
+            }).then((res)=> res.json())
+            window.location.reload();
+        })
+
+        // Tweet like event
+        const likeEvent = async(event) => {
+            const result = await fetch('/Tweets/liked/'+event.target.value, {
+                method: 'PATCH'
+            }).then((res)=> res.json())
+            window.location.reload();
+        }
+
+        // Tweet edit event
+        const editEvent = async(event) => {
+            const tweetTextContent = document.querySelector('#content'+event.target.value);
+            tweetTextContent.contentEditable = true;
+            tweetTextContent.focus();
+            const editBtn = document.querySelector('#saveBtn'+event.target.value);
+            editBtn.style.display = "inline-block";
+        }
+
+        // Save edited tweet
+        const saveEvent = async (event) => {
+            const tweetTextContent = document.querySelector('#content'+event.target.value);
+            tweetTextContent.contentEditable = false;
+            const editedTweet = tweetTextContent.textContent;
+            const editBtn = document.querySelector('#saveBtn'+event.target.value);
+            editBtn.style.display = "none";
+            const result = await fetch('/Tweets/edit/'+event.target.value, {
+                method: 'PUT',
+                headers:{
+                    "Content-Type": "application/json" 
+                },
+                body: JSON.stringify({
+                    textContent : editedTweet
+                })
+            }).then((res)=> res.json())
+            window.location.reload();
+        }
+
+        // Tweet delete event
+        const deleteEvent = async(event) => {
+            const result = await fetch('/Tweets/Delete/'+event.target.value, {
+                method: 'DELETE'
+            }).then((res)=> res.json())
+            window.location.reload();
+        }
+
+        // Logout event
+        const logoutBtn = document.querySelector('#logout');
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('currentUsername');
+            window.location.href = '/login';
+        })
+      </script>
+</body>
+</html>

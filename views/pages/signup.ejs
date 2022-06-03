@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp</title>
+</head>
+<body>
+    <!-- User sign up -->
+    <div>
+        <h2>Signup</h2>
+        <form id="registerUserForm" style="margin-bottom: 2rem;">
+            <label for="registerEmail">Email</label> <br>
+            <input type="email" name="" id="registerEmail"> <br> <br>
+
+            <label for="registerPassword">Passowrd</label> <br>
+            <input type="text" name="" id="registerPassword"> <br> <br>
+
+            <label for="registerDisplayName">Display Name</label> <br>
+            <input type="text" name="" id="registerDisplayName"> <br> <br>
+
+            <label for="registerUsername">Username</label> <br>
+            <input type="text" name="" id="registerUsername"> <br> <br>
+
+            <label for="registerBio">Bio</label> <br>
+            <input type="text" name="" id="registerBio"> <br> <br>
+
+            <label for="registerLogo">Upload Logo</label> <br>
+            <input type="file" name="logo" id="registerLogo"> <br> <br>
+
+            <input type="submit" value="Signup">
+            <button id="loginBtn" title="Already have account? Login here!">Login</button>
+
+            <p id="errorMsg" style="display: none;">Please fill all required feild</p>
+        </form>
+    </div>
+
+    <script>
+        const formElement = document.querySelector('#registerUserForm');
+        formElement.addEventListener('submit', async (e)=>{
+            e.preventDefault();
+            const email = document.querySelector('#registerEmail').value;
+            const password = document.querySelector('#registerPassword').value;
+            const displayName = document.querySelector('#registerDisplayName').value;
+            const username = document.querySelector('#registerUsername').value;
+            const bio = document.querySelector('#registerBio').value;
+            const logoName = uploadLogoFileName;
+            const logoBased64 = logoFileBased64String;
+            
+            if(email && password && displayName && username && bio){
+
+                const result =  await fetch('/Users', {
+                method: 'POST',
+                headers:{
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    Email: email,
+                    Password: password,
+                    DisplayName: displayName,
+                    UserName: username,
+                    Bio: bio,
+                    LogoUri: logoName,
+                    Base64: logoBased64
+                })
+            })
+            .then((res)=> {
+                res.json();
+                window.location.href = '/login';
+
+            })
+            .catch(error=>console.log(error))
+            }else{
+                document.querySelector('#errorMsg').style.display = 'block';
+                setTimeout(function(){
+                    document.querySelector('#errorMsg').style.display = 'none';
+                }, 3000);
+            }
+        })
+
+        //==========================================================================
+        const registerLogoElement = document.querySelector('#registerLogo');
+        var logoFileBased64String = '';
+        var uploadLogoFileName = '';
+
+        registerLogoElement.addEventListener('change', async (e)=>{
+
+            const uploadLogoFile = e.target.files[0];
+            uploadLogoFileName = e.target.files[0].name;
+
+            const imageToBase64 = function (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = function () {
+                        var binaryString = reader.result;
+                        logoFileBased64String = binaryString.match(/,(.*)/)[1];
+                    };
+                    reader.readAsDataURL(file);
+                };
+             imageToBase64(e.target.files[0]);
+        })
+
+        console.log(logoFileBased64String);
+        const loginBtn = document.querySelector('#loginBtn');
+        loginBtn.addEventListener('click', () => { window.location.href = '/login' })
+
+    </script>
+</body>
+</html>

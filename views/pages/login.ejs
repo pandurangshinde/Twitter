@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <!-- User sign up -->
+    <div>
+        <h2>Login</h2>
+        <form id="loginUserForm" style="margin-bottom: 2rem;">
+
+            <label for="loginUsername">Username</label> <br>
+            <input type="text" name="" id="loginUsername"> <br> <br>
+
+            <label for="loginPassword">Passowrd</label> <br>
+            <input type="text" name="" id="loginPassword"> <br> <br>
+
+            <input type="submit" value="Login">
+            <button id="signupBtn" title="Don't have account? SignUp here!">SignUp</button>
+            <p id="errorMsg" style="display: none;">Please fill all required feild</p>
+
+        </form>
+
+    </div>
+
+    <script>
+        const formElement = document.querySelector('#loginUserForm');
+        formElement.addEventListener('submit', async (e)=>{
+            e.preventDefault();
+            
+            const username = document.querySelector('#loginUsername').value;
+            const password = document.querySelector('#loginPassword').value;
+            
+            if(password && username){
+                const result =  await fetch('/User/'+username, {
+                    method: 'GET',
+                    headers:{
+                        "Content-Type": "application/json"
+                    }
+                }).then((res)=> {
+
+                    if(res.status != 404){
+                        localStorage.setItem('currentUsername', username);
+                        window.location.href='/Tweets/'+username;
+                    }else{
+                        document.querySelector('#errorMsg').style.display = 'block';
+                        document.querySelector('#errorMsg').textContent = 'Enter valid credentials';
+                    }
+                })                
+            }else{
+                document.querySelector('#errorMsg').style.display = 'block';
+                setTimeout(function(){
+                    document.querySelector('#errorMsg').style.display = 'none';
+                }, 3000);
+            }
+        })
+
+        const signupBtn = document.querySelector('#signupBtn');
+        signupBtn.addEventListener('click', () => { window.location.href = '/signup' })
+
+    </script>
+</body>
+</html>
